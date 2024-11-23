@@ -20,7 +20,7 @@ class WBugBoard_Front
 
     private function register_api_routes()
     {
-        $this->routes->add_route('/front-create-ticket', 'POST', $this, 'wp_wpit_create_ticket', function () {
+        $this->routes->add_route('/front-create-ticket', 'POST', $this, 'wp_wbbd_create_ticket', function () {
             return $this->user_has_allowed_role();
         });
         $this->routes->add_route('/get-user-tickets', 'GET', $this, 'get_user_tickets', function () {
@@ -33,7 +33,7 @@ class WBugBoard_Front
             return $this->user_has_allowed_role();
         });
 
-        $this->routes->add_route('/update-ticket-status', 'POST', $this, 'wp_wpit_update_ticket_status', function () {
+        $this->routes->add_route('/update-ticket-status', 'POST', $this, 'wp_wbbd_update_ticket_status', function () {
             return $this->user_has_allowed_role();
         });
 
@@ -46,22 +46,22 @@ class WBugBoard_Front
 
     public function enqueue_frontend_scripts()
     {
-        wp_enqueue_script('wbugboard-front-app', MYIT_URL . '/assets/dist/front.min.js', array(), MYIT_VERSION, true);
-        wp_enqueue_style('fontawesome', MYIT_URL . '/assets/css/all.min.css', array(), MYIT_VERSION);
-        wp_enqueue_style('wbugboard-app-style', MYIT_URL . '/assets/dist/style.min.css', array(), MYIT_VERSION);
-        wp_enqueue_style('wbugboard-notyf', MYIT_URL . '/assets/css/notyf.min.css', array(), MYIT_VERSION);
+        wp_enqueue_script('wbugboard-front-app', WBBD_URL . '/assets/dist/front.min.js', array(), WBBD_VERSION, true);
+        wp_enqueue_style('fontawesome', WBBD_URL . '/assets/css/all.min.css', array(), WBBD_VERSION);
+        wp_enqueue_style('wbugboard-app-style', WBBD_URL . '/assets/dist/style.min.css', array(), WBBD_VERSION);
+        wp_enqueue_style('wbugboard-notyf', WBBD_URL . '/assets/css/notyf.min.css', array(), WBBD_VERSION);
 
         add_filter('script_loader_tag', array($this, 'add_type_attribute'), 10, 2);
 
-        require_once MYIT_PATH . '/languages/translations.php';
+        require_once WBBD_PATH . '/languages/translations.php';
 
         wp_localize_script('wbugboard-front-app', 'WPIT_Front', array(
             'nonce' => wp_create_nonce('wp_rest'),
             'WPIT_trans' => $translations,
         ));
 
-        wp_enqueue_script('vue-js', MYIT_URL . '/assets/js/vue.global.min.js', array(), null, true);
-        wp_enqueue_script('konva-js', MYIT_URL . '/assets/js/konva.min.js', array(), null, true);
+        wp_enqueue_script('vue-js', WBBD_URL . '/assets/js/vue.global.min.js', array(), null, true);
+        wp_enqueue_script('konva-js', WBBD_URL . '/assets/js/konva.min.js', array(), null, true);
     }
 
     public function add_type_attribute($tag, $handle)
@@ -84,9 +84,9 @@ class WBugBoard_Front
 
     public function check_maintenance_mode()
     {
-        $general_settings = get_option('wpit_general_settings', []);
+        $general_settings = get_option('wbbd_general_settings', []);
         $is_maintenance_mode = isset($general_settings['maintenanceMode']) ? $general_settings['maintenanceMode'] : false;
-        $allowed_roles = get_option('wpit_allowed_roles', []);
+        $allowed_roles = get_option('wbbd_allowed_roles', []);
 
         if ($is_maintenance_mode && !current_user_can('manage_options')) {
             $user = wp_get_current_user();
@@ -100,7 +100,7 @@ class WBugBoard_Front
         }
     }
 
-    public function wp_wpit_create_ticket(\WP_REST_Request $request)
+    public function wp_wbbd_create_ticket(\WP_REST_Request $request)
     {
         global $wpdb;
         $nonce = $request->get_header('X-WP-Nonce');
@@ -125,13 +125,13 @@ class WBugBoard_Front
 
         $ticket_info = sanitize_text_field($request->get_param('ticket_info'));
 
-        $general_settings = get_option('wpit_general_settings', []);
+        $general_settings = get_option('wbbd_general_settings', []);
         $default_status = isset($general_settings['defaultStatus']) ? $general_settings['defaultStatus'] : 'new';
 
         $asigned = (!empty($asigned) && is_numeric($asigned)) ? absint($asigned) : null;
 
         $inserted = $wpdb->insert(
-            MYIT_TICKETS,
+            WBBD_TICKETS,
             array(
                 'title' => $title,
                 'description' => $description,
@@ -170,7 +170,7 @@ class WBugBoard_Front
             if ($upload && !isset($upload['error'])) {
                 $attachment_url = esc_url_raw($upload['url']);
                 $wpdb->update(
-                    MYIT_TICKETS,
+                    WBBD_TICKETS,
                     array('attachment_url' => $attachment_url),
                     array('id' => $ticket_id),
                     array('%s'),
@@ -191,7 +191,7 @@ class WBugBoard_Front
             }
         }
 
-        $email_settings = get_option('wpit_email_settings', []);
+        $email_settings = get_option('wbbd_email_settings', []);
         $adminNotifications = isset($email_settings['adminNotifications']) ? (bool) $email_settings['adminNotifications'] : false;
         $userNotifications = isset($email_settings['userNotifications']) ? (bool) $email_settings['userNotifications'] : false;
         $useCustomEmail = isset($email_settings['useCustomEmail']) ? (bool) $email_settings['useCustomEmail'] : false;
@@ -259,8 +259,8 @@ class WBugBoard_Front
         LEFT JOIN {$wpdb->users} u ON t.assigned_user_id = u.ID
         WHERE t.user_id = %d
         ORDER BY t.id DESC",
-            MYIT_TICKETS,
-            MYIT_PRIORITIES,
+            WBBD_TICKETS,
+            WBBD_PRIORITIES,
             $user_id
         ));
 
@@ -291,13 +291,13 @@ class WBugBoard_Front
             return new \WP_REST_Response(array('error' => __('User not logged in.', 'wbugboard')), 403);
         }
 
-        $allowed_roles = get_option('wpit_allowed_roles', []);
+        $allowed_roles = get_option('wbbd_allowed_roles', []);
 
         $current_user = wp_get_current_user();
         $user_roles = $current_user->roles;
         $userHasAccess = !empty(array_intersect($user_roles, $allowed_roles));
 
-        $general_settings = get_option('wpit_general_settings', []);
+        $general_settings = get_option('wbbd_general_settings', []);
 
         $activatePlugin = isset($general_settings['activatePlugin']) ? (bool) $general_settings['activatePlugin'] : false;
         $clientChangeStatus = isset($general_settings['clientChangeStatus']) ? (bool) $general_settings['clientChangeStatus'] : false;
@@ -315,7 +315,7 @@ class WBugBoard_Front
         return new \WP_REST_Response($settings, 200);
     }
 
-    public function wp_wpit_update_ticket_status(\WP_REST_Request $request)
+    public function wp_wbbd_update_ticket_status(\WP_REST_Request $request)
     {
         global $wpdb;
         $nonce = $request->get_header('X-WP-Nonce');
@@ -327,13 +327,13 @@ class WBugBoard_Front
         $new_status = sanitize_text_field($request->get_param('status'));
         $user_id = get_current_user_id();
 
-        $ticket = $wpdb->get_row($wpdb->prepare("SELECT * FROM %i WHERE id = %d AND user_id = %d", MYIT_TICKETS, $ticket_id, $user_id));
+        $ticket = $wpdb->get_row($wpdb->prepare("SELECT * FROM %i WHERE id = %d AND user_id = %d", WBBD_TICKETS, $ticket_id, $user_id));
         if (!$ticket) {
             return new \WP_REST_Response(array('error' => __('Ticket not found or access denied.', 'wbugboard')), 403);
         }
 
         $updated = $wpdb->update(
-            MYIT_TICKETS,
+            WBBD_TICKETS,
             array('status' => $new_status),
             array('id' => $ticket_id),
             array('%s'),
@@ -349,7 +349,7 @@ class WBugBoard_Front
 
     private function user_has_allowed_role()
     {
-        $allowed_roles = get_option('wpit_allowed_roles', []);
+        $allowed_roles = get_option('wbbd_allowed_roles', []);
 
         $user = wp_get_current_user();
         $user_roles = $user->roles;
@@ -364,7 +364,7 @@ class WBugBoard_Front
             return new \WP_REST_Response(array('error' => __('Invalid nonce.', 'wbugboard')), 403);
         }
 
-        $user_ids = get_option('wpit_team_users', []);
+        $user_ids = get_option('wbbd_team_users', []);
 
         if (empty($user_ids)) {
             return rest_ensure_response([]);
@@ -399,7 +399,7 @@ class WBugBoard_Front
             return new \WP_REST_Response(array('success' => false, 'message' => __('You are not logged in.', 'wbugboard')), 403);
         }
 
-        $ticket = $wpdb->get_row($wpdb->prepare("SELECT * FROM %i WHERE id = %d", MYIT_TICKETS, $ticket_id));
+        $ticket = $wpdb->get_row($wpdb->prepare("SELECT * FROM %i WHERE id = %d", WBBD_TICKETS, $ticket_id));
         if (!$ticket) {
             return new \WP_REST_Response(array('success' => false, 'message' => __('Ticket not found.', 'wbugboard')), 404);
         }
@@ -409,13 +409,13 @@ class WBugBoard_Front
         }
 
         $deleted_comments = $wpdb->delete(
-            MYIT_COMMENTS,
+            WBBD_COMMENTS,
             array('ticket_id' => $ticket_id),
             array('%d')
         );
 
         $deleted_ticket = $wpdb->delete(
-            MYIT_TICKETS,
+            WBBD_TICKETS,
             array('id' => $ticket_id),
             array('%d')
         );

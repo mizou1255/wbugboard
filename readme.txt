@@ -1,5 +1,4 @@
 === WBugBoard ===
-Contributors: mizou1255
 Tags: issue tracking, support tickets, customer service, project management, WordPress
 Requires at least: 6.2
 Tested up to: 6.7
@@ -61,9 +60,9 @@ First stable release of WBugBoard.
 == Developer Notes ==
 
 The plugin creates three database tables:
-1. **Tickets Table** (`wpit_tickets`) - Stores ticket details (title, description, priority, status, etc.).
-2. **Comments Table** (`wpit_comments`) - Stores comments associated with tickets.
-3. **Priorities Table** (`wpit_priorities`) - Manages priority levels.
+1. **Tickets Table** (`wbbd_tickets`) - Stores ticket details (title, description, priority, status, etc.).
+2. **Comments Table** (`wbbd_comments`) - Stores comments associated with tickets.
+3. **Priorities Table** (`wbbd_priorities`) - Manages priority levels.
 
 == Security & Sanitization ==
 
@@ -84,7 +83,7 @@ The non-compressed source code for JavaScript and CSS files is available in the 
 
 The non-compressed source code is also available on our public repository:
 
-- GitHub Repository: [https://github.com/mizou1255/wp-issue-tracker](https://github.com/mizou1255/wp-issue-tracker)
+- GitHub Repository: [https://github.com/mizou1255/wbugboard](https://github.com/mizou1255/wbugboard)
 
 == Support ==
 

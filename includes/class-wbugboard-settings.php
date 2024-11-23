@@ -38,7 +38,7 @@ class WBugBoard_Settings
     public function enqueue_scripts($hook_suffix)
     {
         if ('wbugboard_page_wbugboard-app-settings' === $hook_suffix) {
-            wp_enqueue_script('wbugboard-admin-settings', MYIT_URL . '/assets/dist/settings.min.js', array(), MYIT_VERSION, true);
+            wp_enqueue_script('wbugboard-admin-settings', WBBD_URL . '/assets/dist/settings.min.js', array(), WBBD_VERSION, true);
         }
     }
 
@@ -89,7 +89,7 @@ class WBugBoard_Settings
 
     public function get_settings()
     {
-        $general_settings = get_option('wpit_general_settings', [
+        $general_settings = get_option('wbbd_general_settings', [
             'ticketLimit' => 5,
             'defaultStatus' => 'new',
             'maintenanceMode' => false,
@@ -97,7 +97,7 @@ class WBugBoard_Settings
             'clientChangeStatus' => false,
         ]);
 
-        $email_settings = get_option('wpit_email_settings', [
+        $email_settings = get_option('wbbd_email_settings', [
             'emailNotifications' => true,
             'useCustomEmail' => false,
             'notificationEmail' => '',
@@ -119,7 +119,7 @@ class WBugBoard_Settings
     {
         global $wpdb;
 
-        $priorities = $wpdb->get_results("SELECT * FROM %i", MYIT_PRIORITIES, ARRAY_A);
+        $priorities = $wpdb->get_results("SELECT * FROM %i", WBBD_PRIORITIES, ARRAY_A);
 
         if (!empty($priorities)) {
             return new \WP_REST_Response($priorities, 200);
@@ -143,7 +143,7 @@ class WBugBoard_Settings
         }
 
         $inserted = $wpdb->insert(
-            MYIT_PRIORITIES,
+            WBBD_PRIORITIES,
             array('name' => $name),
             array('%s')
         );
@@ -167,7 +167,7 @@ class WBugBoard_Settings
         }
 
         $updated = $wpdb->update(
-            MYIT_PRIORITIES,
+            WBBD_PRIORITIES,
             array('name' => $name),
             array('id' => $id),
             array('%s'),
@@ -187,7 +187,7 @@ class WBugBoard_Settings
         $id = intval($request->get_param('id'));
 
         $deleted = $wpdb->delete(
-            MYIT_PRIORITIES,
+            WBBD_PRIORITIES,
             array('id' => $id),
             array('%d')
         );
@@ -204,7 +204,7 @@ class WBugBoard_Settings
         global $wp_roles;
         $roles = $wp_roles->roles;
 
-        $allowed_roles = get_option('wpit_allowed_roles', []);
+        $allowed_roles = get_option('wbbd_allowed_roles', []);
 
         $roles_access = [];
         foreach ($roles as $role_name => $role_info) {
@@ -221,7 +221,7 @@ class WBugBoard_Settings
     public function save_general_settings(\WP_REST_Request $request)
     {
         $general_settings = $request->get_json_params();
-        update_option('wpit_general_settings', $general_settings);
+        update_option('wbbd_general_settings', $general_settings);
 
         return new \WP_REST_Response(['success' => true, 'message' => __('General settings saved successfully', 'wbugboard')], 200);
     }
@@ -229,7 +229,7 @@ class WBugBoard_Settings
     public function save_email_settings(\WP_REST_Request $request)
     {
         $email_settings = $request->get_json_params();
-        update_option('wpit_email_settings', $email_settings);
+        update_option('wbbd_email_settings', $email_settings);
 
         return new \WP_REST_Response(['success' => true, 'message' => __('Email settings saved successfully', 'wbugboard')], 200);
     }
@@ -259,7 +259,7 @@ class WBugBoard_Settings
         if (!wp_verify_nonce($nonce, 'wp_rest')) {
             return new \WP_REST_Response(array('error' => __('Invalid nonce', 'wbugboard')), 403);
         }
-        $team_users = get_option('wpit_team_users', []);
+        $team_users = get_option('wbbd_team_users', []);
 
         if (!is_array($team_users)) {
             $team_users = [];
@@ -287,8 +287,8 @@ class WBugBoard_Settings
         if (!is_array($users)) {
             return new \WP_REST_Response(['error' => __('Invalid data.', 'wbugboard')], 400);
         }
-        update_option('wpit_allowed_roles', $roles);
-        update_option('wpit_team_users', $users);
+        update_option('wbbd_allowed_roles', $roles);
+        update_option('wbbd_team_users', $users);
 
         return new \WP_REST_Response(['success' => true], 200);
     }

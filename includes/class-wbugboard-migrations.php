@@ -8,9 +8,9 @@ class WBugBoard_Migrations
     public function plugin_activation()
     {
         global $wpdb;
-        $table_name = MYIT_TICKETS;
-        $table_name_comment = MYIT_COMMENTS;
-        $table_name_priority = MYIT_PRIORITIES;
+        $table_name = WBBD_TICKETS;
+        $table_name_comment = WBBD_COMMENTS;
+        $table_name_priority = WBBD_PRIORITIES;
 
         $charset_collate = $wpdb->get_charset_collate();
 
@@ -60,12 +60,12 @@ class WBugBoard_Migrations
     {
         global $wpdb;
 
-        $priorities_exist = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM %i", MYIT_PRIORITIES));
+        $priorities_exist = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM %i", WBBD_PRIORITIES));
 
         if (!$priorities_exist) {
-            $wpdb->insert(MYIT_PRIORITIES, ['name' => 'Basse', 'level' => 1]);
-            $wpdb->insert(MYIT_PRIORITIES, ['name' => 'Moyenne', 'level' => 2]);
-            $wpdb->insert(MYIT_PRIORITIES, ['name' => 'Haute', 'level' => 3]);
+            $wpdb->insert(WBBD_PRIORITIES, ['name' => 'Basse', 'level' => 1]);
+            $wpdb->insert(WBBD_PRIORITIES, ['name' => 'Moyenne', 'level' => 2]);
+            $wpdb->insert(WBBD_PRIORITIES, ['name' => 'Haute', 'level' => 3]);
         }
     }
 
@@ -74,9 +74,9 @@ class WBugBoard_Migrations
         global $wpdb;
 
         // Utiliser `wpdb->prepare()` pour la suppression des tables
-        $wpdb->query($wpdb->prepare("DROP TABLE IF EXISTS %s", MYIT_TICKETS));
-        $wpdb->query($wpdb->prepare("DROP TABLE IF EXISTS %s", MYIT_COMMENTS));
-        $wpdb->query($wpdb->prepare("DROP TABLE IF EXISTS %s", MYIT_PRIORITIES));
+        $wpdb->query($wpdb->prepare("DROP TABLE IF EXISTS %s", WBBD_TICKETS));
+        $wpdb->query($wpdb->prepare("DROP TABLE IF EXISTS %s", WBBD_COMMENTS));
+        $wpdb->query($wpdb->prepare("DROP TABLE IF EXISTS %s", WBBD_PRIORITIES));
 
         // Supprimer le dossier des uploads spécifiques
         $upload_dir = WP_CONTENT_DIR . '/uploads/wpit-uploads';

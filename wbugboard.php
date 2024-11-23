@@ -86,16 +86,16 @@ final class WBugBoard
     private function define_constants()
     {
         global $wpdb;
-        define('MYIT_VERSION', $this->version);
-        define('MYIT_PREFIX', $wpdb->prefix);
-        define('MYIT_PATH', dirname(__FILE__));
-        define('MYIT_INCLUDES', MYIT_PATH . '/includes');
-        define('MYIT_URL', plugins_url('', __FILE__));
+        define('WBBD_VERSION', $this->version);
+        define('WBBD_PREFIX', $wpdb->prefix);
+        define('WBBD_PATH', dirname(__FILE__));
+        define('WBBD_INCLUDES', WBBD_PATH . '/includes');
+        define('WBBD_URL', plugins_url('', __FILE__));
 
-        define('MYIT_TICKETS', MYIT_PREFIX . 'wpit_tickets');
-        define('MYIT_PRIORITIES', MYIT_PREFIX . 'wpit_priorities');
-        define('MYIT_COMMENTS', MYIT_PREFIX . 'wpit_ticket_comments');
-        define('MYIT_USERS', MYIT_PREFIX . 'users');
+        define('WBBD_TICKETS', WBBD_PREFIX . 'wbbd_tickets');
+        define('WBBD_PRIORITIES', WBBD_PREFIX . 'wbbd_priorities');
+        define('WBBD_COMMENTS', WBBD_PREFIX . 'wbbd_ticket_comments');
+        define('WBBD_USERS', WBBD_PREFIX . 'users');
 
     }
 
@@ -106,11 +106,11 @@ final class WBugBoard
      */
     private function includes()
     {
-        require_once MYIT_INCLUDES . '/API/Routes.php';
-        require_once MYIT_INCLUDES . '/class-wbugboard-migrations.php';
-        require_once MYIT_INCLUDES . '/class-wbugboard-app.php';
-        require_once MYIT_INCLUDES . '/class-wbugboard-front.php';
-        require_once MYIT_INCLUDES . '/class-wbugboard-settings.php';
+        require_once WBBD_INCLUDES . '/API/Routes.php';
+        require_once WBBD_INCLUDES . '/class-wbugboard-migrations.php';
+        require_once WBBD_INCLUDES . '/class-wbugboard-app.php';
+        require_once WBBD_INCLUDES . '/class-wbugboard-front.php';
+        require_once WBBD_INCLUDES . '/class-wbugboard-settings.php';
     }
 
     /**

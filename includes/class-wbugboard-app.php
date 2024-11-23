@@ -19,10 +19,10 @@ class WBugBoard_App
 
     private function register_api_routes()
     {
-        $this->routes->add_route('/tickets', 'GET', $this, 'wp_wpit_get_tickets', function () {
+        $this->routes->add_route('/tickets', 'GET', $this, 'wp_wbbd_get_tickets', function () {
             return true;
         });
-        $this->routes->add_route('/create-ticket', 'POST', $this, 'wp_wpit_create_ticket', function () {
+        $this->routes->add_route('/create-ticket', 'POST', $this, 'wp_wbbd_create_ticket', function () {
             return current_user_can('edit_posts');
         });
         $this->routes->add_route('/update-ticket-status/(?P<ticket_id>\d+)', 'POST', $this, 'update_ticket_status', function () {
@@ -54,14 +54,14 @@ class WBugBoard_App
             return;
         }
 
-        wp_enqueue_script('wbugboard-admin-app', MYIT_URL . '/assets/dist/app.min.js', array(), MYIT_VERSION, true);
-        wp_enqueue_style('wbugboard-app-css', MYIT_URL . '/assets/dist/app.min.css', array(), MYIT_VERSION);
-        wp_enqueue_style('wbugboard-app-style', MYIT_URL . '/assets/dist/style.min.css', array(), MYIT_VERSION);
-        wp_enqueue_style('wbugboard-notyf', MYIT_URL . '/assets/css/notyf.min.css', array(), MYIT_VERSION);
-        wp_enqueue_style('fontawesome', MYIT_URL . '/assets/css/all.min.css', array(), MYIT_VERSION);
+        wp_enqueue_script('wbugboard-admin-app', WBBD_URL . '/assets/dist/app.min.js', array(), WBBD_VERSION, true);
+        wp_enqueue_style('wbugboard-app-css', WBBD_URL . '/assets/dist/app.min.css', array(), WBBD_VERSION);
+        wp_enqueue_style('wbugboard-app-style', WBBD_URL . '/assets/dist/style.min.css', array(), WBBD_VERSION);
+        wp_enqueue_style('wbugboard-notyf', WBBD_URL . '/assets/css/notyf.min.css', array(), WBBD_VERSION);
+        wp_enqueue_style('fontawesome', WBBD_URL . '/assets/css/all.min.css', array(), WBBD_VERSION);
         add_filter('script_loader_tag', array($this, 'add_type_attribute'), 10, 2);
 
-        require_once MYIT_PATH . '/languages/translations.php';
+        require_once WBBD_PATH . '/languages/translations.php';
         wp_localize_script('wbugboard-admin-app', 'WPIT_Admin',
             array(
                 'nonce' => wp_create_nonce('wp_rest'),
@@ -92,7 +92,7 @@ class WBugBoard_App
             'manage_options',
             'wbugboard',
             array($this, 'admin_page'),
-            MYIT_URL . '/assets/img/icon.png',
+            WBBD_URL . '/assets/img/icon.png',
             23
         );
         add_submenu_page(
@@ -111,7 +111,7 @@ class WBugBoard_App
         echo '<div id="wbugboard-admin-app"></div>';
     }
 
-    public function wp_wpit_get_tickets(\WP_REST_Request $request)
+    public function wp_wbbd_get_tickets(\WP_REST_Request $request)
     {
         global $wpdb;
 
@@ -125,15 +125,15 @@ class WBugBoard_App
             LEFT JOIN %i p ON t.priority = p.id
             LEFT JOIN %i u ON t.user_id = u.ID
             ORDER BY t.created_at DESC
-            LIMIT %d OFFSET %d", MYIT_TICKETS, MYIT_PRIORITIES, MYIT_USERS, $per_page, $offset), ARRAY_A);
+            LIMIT %d OFFSET %d", WBBD_TICKETS, WBBD_PRIORITIES, WBBD_USERS, $per_page, $offset), ARRAY_A);
 
-        $total_tickets = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM %i", MYIT_TICKETS));
+        $total_tickets = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM %i", WBBD_TICKETS));
         $total_pages = ceil($total_tickets / $per_page);
 
         $status_counts = $wpdb->get_results($wpdb->prepare("
             SELECT status, COUNT(*) as count
             FROM %i
-            GROUP BY status", MYIT_TICKETS), OBJECT_K);
+            GROUP BY status", WBBD_TICKETS), OBJECT_K);
 
         $statuses = [
             'new' => isset($status_counts['new']) ? $status_counts['new']->count : 0,
@@ -155,7 +155,7 @@ class WBugBoard_App
         return new \WP_REST_Response($response, 200);
     }
 
-    public function wp_wpit_create_ticket(\WP_REST_Request $request)
+    public function wp_wbbd_create_ticket(\WP_REST_Request $request)
     {
         global $wpdb;
 
@@ -174,13 +174,13 @@ class WBugBoard_App
             return new \WP_REST_Response(['success' => false, 'message' => __('Title and description are required.', 'wbugboard')], 400);
         }
 
-        $general_settings = get_option('wpit_general_settings', []);
+        $general_settings = get_option('wbbd_general_settings', []);
         $default_status = isset($general_settings['defaultStatus']) ? $general_settings['defaultStatus'] : 'new';
 
         $asigned = (!empty($asigned) && is_numeric($asigned)) ? absint($asigned) : null;
 
         $wpdb->insert(
-            MYIT_TICKETS,
+            WBBD_TICKETS,
             [
                 'title' => $title,
                 'description' => $content,
@@ -208,7 +208,7 @@ class WBugBoard_App
         }
 
         $updated = $wpdb->update(
-            MYIT_TICKETS,
+            WBBD_TICKETS,
             array('status' => $new_status),
             array('id' => $ticket_id),
             array('%s'),
@@ -237,7 +237,7 @@ class WBugBoard_App
             LEFT JOIN {$wpdb->users} u ON t.assigned_user_id = u.ID
             WHERE t.id = %d
             ORDER BY t.created_at DESC
-        ", MYIT_TICKETS, MYIT_PRIORITIES, $ticket_id));
+        ", WBBD_TICKETS, WBBD_PRIORITIES, $ticket_id));
 
         if (empty($details)) {
             return new \WP_REST_Response(array('message' => __('No details found', 'wbugboard')), 200);
@@ -267,7 +267,7 @@ class WBugBoard_App
             return new \WP_REST_Response(array('error' => __('Ticket not found', 'wbugboard')), 404);
         }
 
-        $comments = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE ticket_id = %d ORDER BY created_at DESC", MYIT_COMMENTS, $ticket_id));
+        $comments = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE ticket_id = %d ORDER BY created_at DESC", WBBD_COMMENTS, $ticket_id));
 
         if (empty($comments)) {
             return new \WP_REST_Response(array('success' => true, 'message' => __('No comments found', 'wbugboard'), 'comments' => []), 200);
@@ -302,7 +302,7 @@ class WBugBoard_App
         }
 
         $inserted = $wpdb->insert(
-            MYIT_COMMENTS,
+            WBBD_COMMENTS,
             array(
                 'ticket_id' => $ticket_id,
                 'user_id' => $user_id,
@@ -323,7 +323,7 @@ class WBugBoard_App
     {
         global $wpdb;
 
-        $results = $wpdb->get_results($wpdb->prepare("SELECT id, name FROM %i", MYIT_PRIORITIES), ARRAY_A);
+        $results = $wpdb->get_results($wpdb->prepare("SELECT id, name FROM %i", WBBD_PRIORITIES), ARRAY_A);
 
         return new \WP_REST_Response($results, 200);
     }
